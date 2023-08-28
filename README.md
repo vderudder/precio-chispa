@@ -1,63 +1,63 @@
-# Nuxt 3 Minimal Starter
+# PrecioChispa
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+PrecioChispa is a Nuxt 3 web application designed to help you keep track of product prices in Argentina, a country facing economic instability and significant inflation.
+
+## Features
+
+- Add products and their local prices in Argentine pesos (ARS).
+- Automatically convert local prices to USD using the average blue market exchange rate using [Bluelytics API](https://bluelytics.com.ar/#!/api).
+- Track the evolution of product prices in ARS over time based on USD fluctuations.
 
 ## Setup
 
-Make sure to install the dependencies:
+### Prerequisites
 
-```bash
-# npm
-npm install
+- Node.js (v18 or higher)
+- npm
 
-# pnpm
-pnpm install
+### Installation
 
-# yarn
-yarn install
-```
+1. Clone the repository:
+
+   ```sh
+   git clone https://github.com/vderudder/precio-chispa.git
+   cd precio-chispa
+   ```
+   
+2. Make sure to install the dependencies:
+
+   ```bash
+  	# npm
+    npm install
+    ```
+   ```bash
+    # pnpm
+    pnpm install
+    ```
+   ```bash
+    # yarn
+    yarn install
+    ```
 
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
-
+    
 ```bash
 # npm
 npm run dev
+```
 
+```bash
 # pnpm
 pnpm run dev
-
+```
+```bash
 # yarn
 yarn dev
 ```
 
-## Production
 
-Build the application for production:
+## Authors
 
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- [@vderudder](https://github.com/vderudder)
