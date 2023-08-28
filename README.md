@@ -1,6 +1,10 @@
 # PrecioChispa
 
-PrecioChispa is a Nuxt 3 web application designed to help you keep track of product prices in Argentina, a country facing economic instability and significant inflation.
+PrecioChispa is a web application designed to help you keep track of product prices in Argentina, a country facing economic instability and significant inflation.
+
+### Tech stack
+- [Nuxt 3](https://nuxt.com/)
+- [NuxtLabs UI](https://ui.nuxtlabs.com/getting-started)
 
 ## Features
 
