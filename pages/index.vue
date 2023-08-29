@@ -1,7 +1,9 @@
 <template>
     <UContainer>
+        <!-- Header -->
         <div class="text-center">
             <h1 class="text-4xl my-3">Precio<span class="text-primary-500">Chispa</span></h1>
+            <!-- USD Price -->
             <div class="mb-6">
                 <!-- Badge and edit -->
                 <div v-if="!ui.editingUsdPrice">
@@ -26,9 +28,40 @@
             </div>
         </div>
 
+        <!-- Search and product form -->
+        <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
+            <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+                <div class="flex items-center gap-3 search-and-add">
+                    <UInput placeholder="Buscar | Agregar" v-model="product.name"
+                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" autofocus />
+                    <UButton :disabled="!product.name" icon="i-heroicons-chevron-down" size="xs" color="primary" square
+                        variant="solid" @click="showFormClick" />
+                </div>
+            </UFormGroup>
+            <div v-if="ui.showingForm">
+                <div class="grid grid-cols-2 gap-3">
+                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+                        <UInput v-model="product.arsPrice" type="number"
+                            trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    </UFormGroup>
+                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+                        <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    </UFormGroup>
+                </div>
+
+                <div class="text-center">
+                    <UButton type="submit" class="my-2" :disabled="ui.loadingUsd">
+                        Agregar
+                    </UButton>
+                </div>
+
+            </div>
+        </UForm>
+
+        <!-- Product table -->
         <div v-if="ui.productList">
-            <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts" :ui="{th: {size: 'text-base'}, td: {size: 'text-base'}}"
-                class="overflow-auto table__height"
+            <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts"
+                :ui="{ th: { size: 'text-base' }, td: { size: 'text-base' } }" class="overflow-auto table__height"
                 :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }"
                 :empty-state="{ icon: 'i-heroicons-face-frown-20-solid', label: 'No se encontraron productos' }">
 
@@ -41,38 +74,13 @@
                 </template>
             </UTable>
         </div>
+        <!-- Empty state -->
         <div v-else class="text-center">
             <UIcon name="i-heroicons-face-frown-20-solid" />
             <p>No se encontraron productos</p>
-
         </div>
 
-        <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
-            <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required>
-                <div class="flex items-center gap-3 search-and-add">
-                    <UInput placeholder="Buscar | Agregar" v-model="product.name" class="w-full"
-                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" autofocus />
-                    <UButton :disabled="!product.name" icon="i-heroicons-chevron-down" size="sm" color="primary" square
-                        variant="solid" @click="showFormClick" />
-                </div>
-            </UFormGroup>
-            <div v-if="ui.showingForm">
-                <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3" required>
-                    <UInput v-model="product.arsPrice" type="number"
-                        trailing-icon="i-heroicons-exclamation-circle-20-solid" />
-                </UFormGroup>
-                <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3" required>
-                    <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
-                </UFormGroup>
-                <UButton type="submit" class="my-4" :disabled="ui.loadingUsd">
-                    Agregar
-                </UButton>
-            </div>
-
-
-
-        </UForm>
-
+        <!-- Delete modal -->
         <UModal v-model="ui.showingModal" prevent-close>
             <UCard>
                 <template #header>
@@ -89,6 +97,7 @@
                 </template>
             </UCard>
         </UModal>
+
     </UContainer>
 </template>
 
@@ -304,7 +313,7 @@ onMounted(async () => {
 }
 
 .table__height {
-    height: 36rem;
+    height: 100vh;
 }
 
 .search-and-add> :first-child {
