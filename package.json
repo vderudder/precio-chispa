@@ -13,5 +13,8 @@
     "@nuxthq/ui": "^2.7.0",
     "@types/node": "^18.17.3",
     "nuxt": "^3.6.5"
+  },
+  "dependencies": {
+    "vue-uuid": "^3.0.0"
   }
 }
