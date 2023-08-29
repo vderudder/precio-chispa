@@ -27,7 +27,7 @@
         </div>
 
         <div v-if="ui.productList">
-            <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts"
+            <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts" :ui="{th: {size: 'text-base'}, td: {size: 'text-base'}}"
                 class="overflow-auto table__height"
                 :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }"
                 :empty-state="{ icon: 'i-heroicons-face-frown-20-solid', label: 'No se encontraron productos' }">
