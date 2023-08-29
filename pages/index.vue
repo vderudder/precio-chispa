@@ -40,11 +40,11 @@
                     <UButton color="gray" variant="ghost" icon="i-heroicons-trash" @click="deleteProductClick(row)" />
                 </template>
             </UTable>
-
         </div>
         <div v-else class="text-center">
             <UIcon name="i-heroicons-face-frown-20-solid" />
             <p>No se encontraron productos</p>
+
         </div>
 
         <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
@@ -73,7 +73,22 @@
 
         </UForm>
 
+        <UModal v-model="ui.showingModal" prevent-close>
+            <UCard>
+                <template #header>
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-heroicons-exclamation-circle-20-solid" class="me-1 text-red-400" />
+                        <strong>Eliminar producto</strong>
+                    </div>
+                </template>
+                ¿Estás seguro?
 
+                <template #footer>
+                    <UButton color="red" variant="solid" @click="confirmDeleteClick">Sí, eliminar</UButton>
+                    <UButton color="white" variant="ghost" class="mx-4" @click="cancelDeleteClick">Cancelar</UButton>
+                </template>
+            </UCard>
+        </UModal>
     </UContainer>
 </template>
 
@@ -139,6 +154,8 @@ const ui = ref<{
     loadingProducts: boolean,
     editingUsdPrice: boolean,
     showingForm: boolean,
+    showingModal: boolean,
+    productToDelete: IProduct,
     usdPrice: number
 }>(
     {
@@ -147,6 +164,8 @@ const ui = ref<{
         loadingProducts: true,
         editingUsdPrice: false,
         showingForm: false,
+        showingModal: false,
+        productToDelete: { ...initialProduct },
         usdPrice: 0
     }
 );
@@ -178,7 +197,7 @@ async function addProductClick() {
         // Saving to local storage
         setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
         // Clearing form
-        clearForm(product, initialProduct);
+        clearObject(product, initialProduct);
         ui.value.showingForm = false;
     }
 }
@@ -210,6 +229,11 @@ function showFormClick() {
 }
 
 function deleteProductClick(product: IProduct) {
+    ui.value.showingModal = true;
+    ui.value.productToDelete = { ...product };
+}
+
+function confirmDeleteClick(product: IProduct) {
     // Remove from ui list
     const index = ui.value.productList.findIndex(p => p.id = product.id);
     ui.value.productList.splice(index, 1);
@@ -217,8 +241,13 @@ function deleteProductClick(product: IProduct) {
     // Replace local storage
     const stringifiedList = JSON.stringify(ui.value.productList.splice(index, 1));
     setItemToLocalStorage(productListKey, stringifiedList);
-    
-    
+    ui.value.showingModal = false;
+
+}
+
+function cancelDeleteClick() {
+    clearObject(ui.value.productToDelete, initialProduct);
+    ui.value.showingModal = false;
 }
 
 // Utils - TODO: Move to utils directory
@@ -236,11 +265,11 @@ function roundNumberTwoDecimals(num: number) {
 }
 
 /**
- * Clears form input values
+ * Clears object
  * @param {*} current Current item
  * @param {*} initial Item with inital/cleared values
  */
-function clearForm(current: any, initial: any) {
+function clearObject(current: any, initial: any) {
     Object.assign(current, initial);
 }
 
