@@ -35,6 +35,10 @@
                 <template #estPrice-data="{ row }">
                     <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
                 </template>
+
+                <template #actions-data="{ row }">
+                    <UButton color="gray" variant="ghost" icon="i-heroicons-trash" @click="deleteProductClick(row)" />
+                </template>
             </UTable>
 
         </div>
@@ -77,12 +81,14 @@
 import { reactive, ref } from 'vue'
 import type { FormError } from '@nuxthq/ui/dist/runtime/types'
 import { IProduct } from '../typings/product.data'
+import { uuid } from 'vue-uuid';
 
 // Key to set productList in localstorage
 const productListKey = 'product-list';
 
 // Initial product with cleared values
 const initialProduct: IProduct = {
+    id: '',
     name: '',
     estPrice: 0,
     shop: '',
@@ -93,6 +99,9 @@ const initialProduct: IProduct = {
 
 // Form columns config
 const columns = [
+    {
+        key: 'actions'
+    },
     {
         key: 'name',
         label: 'Producto'
@@ -160,6 +169,7 @@ const filteredRows = computed(() => {
 async function addProductClick() {
     if (await form.value!.validate()) {
         // Calculating fields
+        product.id = uuid.v4();
         product.date = new Date(Date.now()).toLocaleDateString('es-AR');
         product.usdPrice = roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
         product.estPrice = roundNumberTwoDecimals(product.usdPrice * ui.value.usdPrice);
@@ -199,6 +209,18 @@ function showFormClick() {
     ui.value.showingForm = true;
 }
 
+function deleteProductClick(product: IProduct) {
+    // Remove from ui list
+    const index = ui.value.productList.findIndex(p => p.id = product.id);
+    ui.value.productList.splice(index, 1);
+
+    // Replace local storage
+    const stringifiedList = JSON.stringify(ui.value.productList.splice(index, 1));
+    setItemToLocalStorage(productListKey, stringifiedList);
+    
+    
+}
+
 // Utils - TODO: Move to utils directory
 function setItemToLocalStorage(key: string, value: string) {
     localStorage.setItem(key, value)
@@ -225,7 +247,7 @@ function clearForm(current: any, initial: any) {
 onMounted(async () => {
     ui.value.loadingUsd = true;
     ui.value.loadingProducts = true;
-    
+
     // Getting avg blue dollar price
     try {
         const data = await $fetch<{ blue: { value_avg: string } }>('https://api.bluelytics.com.ar/v2/latest')
@@ -234,7 +256,7 @@ onMounted(async () => {
     } catch (error) {
         ui.value.usdPrice = 0;
     }
-    
+
     //  Calculating estimated price when page mounts
     const productList = getItemFromLocalStorage(productListKey)
     if (productList) {
@@ -247,7 +269,7 @@ onMounted(async () => {
 </script>
 
 <style >
-.product-table__highlighted-text{
+.product-table__highlighted-text {
     color: #22c55e !important;
     font-weight: bold;
 }
@@ -256,7 +278,7 @@ onMounted(async () => {
     height: 36rem;
 }
 
-.search-and-add > :first-child {
+.search-and-add> :first-child {
     flex-grow: 1;
 }
 </style>
