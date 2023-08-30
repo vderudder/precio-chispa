@@ -33,8 +33,9 @@
             <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required
                 :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                 <div class="flex items-center gap-3 search-and-add">
-                    <UInput placeholder="Buscar | Agregar" v-model="product.name"
-                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" autofocus />
+                    <UInput placeholder="Buscar | Agregar" v-model="product.name" ref="searchInput"
+                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline"
+                        @focus="scrollAtFocus" />
                     <UButton :disabled="!product.name" icon="i-heroicons-chevron-down" size="xs" color="primary" square
                         variant="solid" @click="showFormClick" />
                 </div>
@@ -184,6 +185,7 @@ const ui = ref<{
     }
 );
 const form = ref()
+const searchInput = ref();
 
 //Computed
 const filteredRows = computed(() => {
@@ -262,6 +264,10 @@ function confirmDeleteClick() {
 function cancelDeleteClick() {
     clearObject(ui.value.productToDelete, initialProduct);
     ui.value.showingModal = false;
+}
+
+function scrollAtFocus() {
+    searchInput.value.input.scrollIntoView({ behavior: "smooth" });
 }
 
 // Utils - TODO: Move to utils directory
