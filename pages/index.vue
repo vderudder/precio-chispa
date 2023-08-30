@@ -36,7 +36,7 @@
                     <UInput placeholder="Buscar | Agregar" v-model="product.name" ref="searchInput"
                         icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline"
                         @focus="scrollAtFocus" />
-                    <UButton :disabled="!product.name" icon="i-heroicons-chevron-down" size="xs" color="primary" square
+                    <UButton :disabled="!product.name" :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs" color="primary" square
                         variant="solid" @click="showFormClick" />
                 </div>
             </UFormGroup>
