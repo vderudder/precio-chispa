@@ -10,7 +10,7 @@
                     <UBadge color="gray" size="md" variant="solid" class="me-2">
                         <UIcon v-if="!ui.loadingUsd" name="i-heroicons-currency-dollar-20-solid"
                             class="me-1 text-primary-500" />
-                        <UIcon v-else name="i-heroicons-arrow-path-20-solid" class="me-1" />
+                        <UIcon v-else name="i-heroicons-arrow-path-20-solid" class="me-1 animate-spin" />
                         {{ ui.usdPrice == 0 ? '' : ui.usdPrice }}
                     </UBadge>
                     <UButton :disabled="ui.loadingUsd" icon="i-heroicons-pencil" size="2xs" color="lime" square
@@ -36,8 +36,9 @@
                     <UInput placeholder="Buscar | Agregar" v-model="product.name" ref="searchInput"
                         icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline"
                         @focus="scrollAtFocus" />
-                    <UButton :disabled="!product.name" :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs" color="primary" square
-                        variant="solid" @click="showFormClick" />
+                    <UButton :disabled="!product.name"
+                        :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs"
+                        color="primary" square variant="solid" @click="showFormClick" />
                 </div>
             </UFormGroup>
             <div v-if="ui.showingForm">
@@ -65,7 +66,19 @@
         <!-- Product table -->
         <div v-if="ui.productList">
             <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts"
-                :ui="{ th: { size: 'text-base' }, td: { size: 'text-base' } }" class="overflow-auto table__height"
+                :ui="{ 
+                    th: { size: 'text-base' }, 
+                    td: { size: 'text-base' }, 
+                    loadingState: { 
+                        wrapper: 'flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14', 
+                        icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin' 
+                        }, 
+                    emptyState: { 
+                        wrapper: 'flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14', 
+                        icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4' 
+                        } 
+                    }"
+                class="overflow-auto table__height"
                 :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }"
                 :empty-state="{ icon: 'i-heroicons-face-frown-20-solid', label: 'No se encontraron productos' }">
 
