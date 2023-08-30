@@ -30,7 +30,8 @@
 
         <!-- Search and product form -->
         <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
-            <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+            <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required
+                :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                 <div class="flex items-center gap-3 search-and-add">
                     <UInput placeholder="Buscar | Agregar" v-model="product.name"
                         icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" autofocus />
@@ -40,11 +41,13 @@
             </UFormGroup>
             <div v-if="ui.showingForm">
                 <div class="grid grid-cols-2 gap-3">
-                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3" required
+                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                         <UInput v-model="product.arsPrice" type="number"
                             trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                     </UFormGroup>
-                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3" required :ui="{error: 'mt-1 text-red-500 dark:text-red-400 text-xs'}">
+                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3" required
+                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                         <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                     </UFormGroup>
                 </div>
@@ -133,7 +136,7 @@ const columns = [
     {
         key: 'estPrice',
         label: 'Precio hoy (ARS$)',
-        class: 'product-table__highlighted-text'
+        class: 'product-table__highlighted-text product-table__min-width'
     },
     {
         key: 'shop',
@@ -145,11 +148,13 @@ const columns = [
     },
     {
         key: 'usdPrice',
-        label: 'Precio antes (USD$)'
+        label: 'Precio antes (USD$)',
+        class: 'product-table__min-width'
     },
     {
         key: 'arsPrice',
-        label: 'Precio antes (ARS$)'
+        label: 'Precio antes (ARS$)',
+        class: 'product-table__min-width'
     },
 ]
 
@@ -195,6 +200,7 @@ const filteredRows = computed(() => {
 
 // Methods
 async function addProductClick() {
+    if (!ui.value.showingForm) return;
     if (await form.value!.validate()) {
         // Calculating fields
         product.id = uuid.v4();
@@ -234,7 +240,7 @@ function saveUsdPriceClick() {
 }
 
 function showFormClick() {
-    ui.value.showingForm = true;
+    ui.value.showingForm = !ui.value.showingForm;
 }
 
 function deleteProductClick(product: IProduct) {
@@ -242,10 +248,9 @@ function deleteProductClick(product: IProduct) {
     ui.value.productToDelete = { ...product };
 }
 
-function confirmDeleteClick(product: IProduct) {
+function confirmDeleteClick() {
     // Remove from ui list
-    const index = ui.value.productList.findIndex(p => p.id = product.id);
-    ui.value.productList.splice(index, 1);
+    const index = ui.value.productList.findIndex(p => p.id === ui.value.productToDelete.id);
 
     // Replace local storage
     const stringifiedList = JSON.stringify(ui.value.productList.splice(index, 1));
@@ -318,5 +323,9 @@ onMounted(async () => {
 
 .search-and-add> :first-child {
     flex-grow: 1;
+}
+
+.product-table__min-width {
+    min-width: 10.5rem
 }
 </style>
