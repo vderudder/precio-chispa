@@ -85,7 +85,7 @@
         </div>
 
         <!-- Delete modal -->
-        <UModal v-model="ui.showingModal" prevent-close>
+        <UModal v-model="ui.showingModal" @focusout="cancelDeleteClick">
             <UCard>
                 <template #header>
                     <div class="flex items-center gap-2">
@@ -110,6 +110,13 @@ import { reactive, ref } from 'vue'
 import type { FormError } from '@nuxthq/ui/dist/runtime/types'
 import { IProduct } from '../typings/product.data'
 import { uuid } from 'vue-uuid';
+
+defineShortcuts({
+    escape: {
+        usingInput: true,
+        handler: () => { cancelDeleteClick(); }
+    }
+})
 
 // Key to set productList in localstorage
 const productListKey = 'product-list';
@@ -253,9 +260,10 @@ function deleteProductClick(product: IProduct) {
 function confirmDeleteClick() {
     // Remove from ui list
     const index = ui.value.productList.findIndex(p => p.id === ui.value.productToDelete.id);
+    ui.value.productList.splice(index, 1);
 
     // Replace local storage
-    const stringifiedList = JSON.stringify(ui.value.productList.splice(index, 1));
+    const stringifiedList = JSON.stringify(ui.value.productList);
     setItemToLocalStorage(productListKey, stringifiedList);
     ui.value.showingModal = false;
 
