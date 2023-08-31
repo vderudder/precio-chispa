@@ -1,40 +1,14 @@
 <template>
     <UContainer>
-        <!-- Header -->
-        <div class="text-center">
-            <h1 class="text-4xl my-3">Precio<span class="text-primary-500">Chispa</span></h1>
-            <!-- USD Price -->
-            <div class="mb-6">
-                <!-- Badge and edit -->
-                <div v-if="!ui.editingUsdPrice">
-                    <UBadge color="gray" size="md" variant="solid" class="me-2">
-                        <UIcon v-if="!ui.loadingUsd" name="i-heroicons-currency-dollar-20-solid"
-                            class="me-1 text-primary-500" />
-                        <UIcon v-else name="i-heroicons-arrow-path-20-solid" class="me-1 animate-spin" />
-                        {{ ui.usdPrice == 0 ? '' : ui.usdPrice }}
-                    </UBadge>
-                    <UButton :disabled="ui.loadingUsd" icon="i-heroicons-pencil" size="2xs" color="lime" square
-                        variant="soft" @click="editUsdPriceClick" />
-                </div>
-
-                <!-- Input and save -->
-                <div v-if="(ui.editingUsdPrice || ui.usdPrice == 0) && !ui.loadingUsd"
-                    class="flex flex-row justify-center items-center gap-3 w-32 m-auto">
-                    <UInput v-model="ui.usdPrice" type="number" class="w-24" size="xs" color="primary"
-                        icon="i-heroicons-currency-dollar" />
-                    <UButton icon="i-heroicons-check" size="2xs" color="primary" square variant="solid"
-                        @click="saveUsdPriceClick" />
-                </div>
-            </div>
-        </div>
+        <Header :usd-price="ui.usdPrice" :loading-usd="ui.loadingUsd" @usd-price-change="usdPriceChanged"/>
 
         <!-- Search and product form -->
         <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
-            <UFormGroup label="Producto" name="name" class="mb-3 justify-center" required
+            <UFormGroup label="Producto" name="name" class="mb-3 justify-center"
                 :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                 <div class="flex items-center gap-3 search-and-add">
-                    <UInput placeholder="Buscar | Agregar" v-model="product.name" ref="searchInput"
-                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline"
+                    <UInput ref="searchInput" v-model="product.name" placeholder="Buscar | Agregar" 
+                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" trailing-icon="i-heroicons-exclamation-circle-20-solid"
                         @focus="scrollAtFocus" />
                     <UButton :disabled="!product.name"
                         :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs"
@@ -43,12 +17,12 @@
             </UFormGroup>
             <div v-if="ui.showingForm">
                 <div class="grid grid-cols-2 gap-3">
-                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3" required
+                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
                         :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                         <UInput v-model="product.arsPrice" type="number"
                             trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                     </UFormGroup>
-                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3" required
+                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3"
                         :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                         <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                     </UFormGroup>
@@ -250,14 +224,9 @@ function validate(product: IProduct): FormError[] {
     return errors
 }
 
-function editUsdPriceClick() {
-    ui.value.editingUsdPrice = true;
-}
-
-function saveUsdPriceClick() {
-    ui.value.editingUsdPrice = false;
+function usdPriceChanged(event: any) {
     // Calculate estimated price
-    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: roundNumberTwoDecimals(ui.value.usdPrice * p.usdPrice) }));
+    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: roundNumberTwoDecimals(event.usdPrice * p.usdPrice) }));
 }
 
 function showFormClick() {
@@ -352,6 +321,6 @@ onMounted(async () => {
 }
 
 .product-table__min-width {
-    min-width: 10.5rem
+    min-width: 11rem
 }
 </style>
