@@ -70,23 +70,7 @@
             </UTable>
         </div>
 
-        <!-- Delete modal -->
-        <UModal v-model="ui.showingModal" @focusout="cancelDeleteClick">
-            <UCard>
-                <template #header>
-                    <div class="flex items-center gap-2">
-                        <UIcon name="i-heroicons-exclamation-circle-20-solid" class="me-1 text-red-400" />
-                        <strong>Eliminar producto</strong>
-                    </div>
-                </template>
-                ¿Estás seguro?
-
-                <template #footer>
-                    <UButton color="red" variant="solid" @click="confirmDeleteClick">Sí, eliminar</UButton>
-                    <UButton color="white" variant="ghost" class="mx-4" @click="cancelDeleteClick">Cancelar</UButton>
-                </template>
-            </UCard>
-        </UModal>
+        <Modal :showing-modal="ui.showingModal" :product="ui.productToDelete" @cancel-delete="cancelDeleteClick" @confirm-delete="confirmDeleteClick"/>
 
     </UContainer>
 </template>
@@ -96,6 +80,8 @@ import { reactive, ref } from 'vue'
 import type { FormError } from '@nuxthq/ui/dist/runtime/types'
 import { IProduct } from '../typings/product.data'
 import { uuid } from 'vue-uuid';
+import Modal from '../components/modal.vue'
+import { Utils } from '../utils/utils';
 
 defineShortcuts({
     escape: {
@@ -106,17 +92,6 @@ defineShortcuts({
 
 // Key to set productList in localstorage
 const productListKey = 'product-list';
-
-// Initial product with cleared values
-const initialProduct: IProduct = {
-    id: '',
-    name: '',
-    estPrice: 0,
-    shop: '',
-    date: '',
-    usdPrice: 0,
-    arsPrice: 0,
-};
 
 // Form columns config
 const columns = [
@@ -153,7 +128,7 @@ const columns = [
 ]
 
 // Reactive
-const product: IProduct = reactive({ ...initialProduct })
+const product: IProduct = reactive({ ...Utils.initialProduct })
 
 // Refs
 const ui = ref<{
@@ -173,7 +148,7 @@ const ui = ref<{
         editingUsdPrice: false,
         showingForm: false,
         showingModal: false,
-        productToDelete: { ...initialProduct },
+        productToDelete: { ...Utils.initialProduct },
         usdPrice: 0
     }
 );
@@ -200,14 +175,15 @@ async function addProductClick() {
         // Calculating fields
         product.id = uuid.v4();
         product.date = new Date(Date.now()).toLocaleDateString('es-AR');
-        product.usdPrice = roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
-        product.estPrice = roundNumberTwoDecimals(product.usdPrice * ui.value.usdPrice);
+        product.usdPrice = Utils.roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
+        product.estPrice = Utils.roundNumberTwoDecimals(product.usdPrice * ui.value.usdPrice);
         // Adding product to list
         ui.value.productList.push({ ...product });
         // Saving to local storage
-        setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+        Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+
         // Clearing form
-        clearObject(product, initialProduct);
+        Utils.clearObject(product, Utils.initialProduct);
         ui.value.showingForm = false;
     }
 }
@@ -226,7 +202,7 @@ function validate(product: IProduct): FormError[] {
 
 function usdPriceChanged(event: any) {
     // Calculate estimated price
-    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: roundNumberTwoDecimals(event.usdPrice * p.usdPrice) }));
+    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(event.usdPrice * p.usdPrice) }));
 }
 
 function showFormClick() {
@@ -239,47 +215,25 @@ function deleteProductClick(product: IProduct) {
 }
 
 function confirmDeleteClick() {
+    ui.value.showingModal = false;
+
     // Remove from ui list
     const index = ui.value.productList.findIndex(p => p.id === ui.value.productToDelete.id);
     ui.value.productList.splice(index, 1);
 
     // Replace local storage
     const stringifiedList = JSON.stringify(ui.value.productList);
-    setItemToLocalStorage(productListKey, stringifiedList);
-    ui.value.showingModal = false;
+    Utils.setItemToLocalStorage(productListKey, stringifiedList);
 
 }
 
 function cancelDeleteClick() {
-    clearObject(ui.value.productToDelete, initialProduct);
     ui.value.showingModal = false;
+    Utils.clearObject(ui.value.productToDelete, Utils.initialProduct);
 }
 
 function scrollAtFocus() {
     searchInput.value.input.scrollIntoView({ behavior: "smooth" });
-}
-
-// Utils - TODO: Move to utils directory
-function setItemToLocalStorage(key: string, value: string) {
-    localStorage.setItem(key, value)
-}
-
-function getItemFromLocalStorage(key: string) {
-    const item = localStorage.getItem(key)
-    if (item) return JSON.parse(item)
-}
-
-function roundNumberTwoDecimals(num: number) {
-    return Math.round(num * 100) / 100
-}
-
-/**
- * Clears object
- * @param {*} current Current item
- * @param {*} initial Item with inital/cleared values
- */
-function clearObject(current: any, initial: any) {
-    Object.assign(current, initial);
 }
 
 onMounted(async () => {
@@ -296,9 +250,9 @@ onMounted(async () => {
     }
 
     //  Calculating estimated price when page mounts
-    const productList = getItemFromLocalStorage(productListKey)
+    const productList = Utils.getItemFromLocalStorage(productListKey)
     if (productList) {
-        ui.value.productList = productList.map((p: IProduct) => ({ ...p, estPrice: roundNumberTwoDecimals(ui.value.usdPrice * p.usdPrice) }));
+        ui.value.productList = productList.map((p: IProduct) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(ui.value.usdPrice * p.usdPrice) }));
     }
     ui.value.loadingProducts = false;
 })
