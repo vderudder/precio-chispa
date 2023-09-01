@@ -37,38 +37,7 @@
             </div>
         </UForm>
 
-        <!-- Product table -->
-        <div v-if="ui.productList">
-            <UTable :rows="filteredRows" :columns="columns" :loading="ui.loadingProducts" :ui="{
-                th: { size: 'text-base' },
-                td: { size: 'text-base' },
-                loadingState: {
-                    wrapper: 'flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14',
-                    icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin'
-                },
-            }" class="overflow-auto table__height"
-                :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }">
-
-                <template #estPrice-data="{ row }">
-                    <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
-                </template>
-
-                <!-- Delete button -->
-                <template #actions-data="{ row }">
-                    <UButton color="gray" variant="ghost" icon="i-heroicons-trash" @click="deleteProductClick(row)" />
-                </template>
-
-                <!-- Empty state -->
-                <template #empty-state>
-                    <div class="flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14">
-                        <UIcon name="i-heroicons-face-frown-20-solid"
-                            class="w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-                        <p>No se encontraron productos</p>
-                        <UButton label="¡Agregar ahora!" variant="soft" @click="showFormClick" class="mt-4" />
-                    </div>
-                </template>
-            </UTable>
-        </div>
+        <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick" @delete-click="deleteProductClick"/>
 
         <Modal :showing-modal="ui.showingModal" :product="ui.productToDelete" @cancel-delete="cancelDeleteClick" @confirm-delete="confirmDeleteClick"/>
 
@@ -80,7 +49,10 @@ import { reactive, ref } from 'vue'
 import type { FormError } from '@nuxthq/ui/dist/runtime/types'
 import { IProduct } from '../typings/product.data'
 import { uuid } from 'vue-uuid';
+
+import Header from '../components/header.vue'
 import Modal from '../components/modal.vue'
+import ProductTable from '../components/productTable.vue'
 import { Utils } from '../utils/utils';
 
 defineShortcuts({
@@ -93,40 +65,6 @@ defineShortcuts({
 // Key to set productList in localstorage
 const productListKey = 'product-list';
 
-// Form columns config
-const columns = [
-    {
-        key: 'actions'
-    },
-    {
-        key: 'name',
-        label: 'Producto'
-    },
-    {
-        key: 'estPrice',
-        label: 'Precio hoy (ARS$)',
-        class: 'product-table__highlighted-text product-table__min-width'
-    },
-    {
-        key: 'shop',
-        label: 'Lugar/Negocio'
-    },
-    {
-        key: 'date',
-        label: 'Fecha'
-    },
-    {
-        key: 'usdPrice',
-        label: 'Precio antes (USD$)',
-        class: 'product-table__min-width'
-    },
-    {
-        key: 'arsPrice',
-        label: 'Precio antes (ARS$)',
-        class: 'product-table__min-width'
-    },
-]
-
 // Reactive
 const product: IProduct = reactive({ ...Utils.initialProduct })
 
@@ -135,7 +73,6 @@ const ui = ref<{
     productList: IProduct[],
     loadingUsd: boolean,
     loadingProducts: boolean,
-    editingUsdPrice: boolean,
     showingForm: boolean,
     showingModal: boolean,
     productToDelete: IProduct,
@@ -145,7 +82,6 @@ const ui = ref<{
         productList: [],
         loadingUsd: true,
         loadingProducts: true,
-        editingUsdPrice: false,
         showingForm: false,
         showingModal: false,
         productToDelete: { ...Utils.initialProduct },
@@ -209,9 +145,9 @@ function showFormClick() {
     ui.value.showingForm = !ui.value.showingForm;
 }
 
-function deleteProductClick(product: IProduct) {
+function deleteProductClick(event: any) {
     ui.value.showingModal = true;
-    ui.value.productToDelete = { ...product };
+    ui.value.productToDelete = {...event.product};
 }
 
 function confirmDeleteClick() {

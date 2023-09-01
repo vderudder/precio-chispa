@@ -1,0 +1,121 @@
+<template>
+    <div>
+        <UTable :rows="ui.productList" :columns="columns" :loading="ui.loadingProducts" :ui="{
+            th: { size: 'text-base' },
+            td: { size: 'text-base' },
+            loadingState: {
+                wrapper: 'flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14',
+                icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin'
+            },
+        }" class="overflow-auto table__height"
+            :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }">
+
+            <template #estPrice-data="{ row }">
+                <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
+            </template>
+
+            <!-- Delete button -->
+            <template #actions-data="{ row }">
+                <UButton color="gray" variant="ghost" icon="i-heroicons-trash" @click="deleteProductClick(row)" />
+            </template>
+
+            <!-- Empty state -->
+            <template #empty-state>
+                <div class="flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14">
+                    <UIcon name="i-heroicons-face-frown-20-solid"
+                        class="w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                    <p>No se encontraron productos</p>
+                    <UButton label="¡Agregar ahora!" variant="soft" @click="addProductClick" class="mt-4" />
+                </div>
+            </template>
+        </UTable>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { IProduct } from '../typings/product.data'
+
+// Form columns config
+const columns = [
+    {
+        key: 'actions'
+    },
+    {
+        key: 'name',
+        label: 'Producto'
+    },
+    {
+        key: 'estPrice',
+        label: 'Precio hoy (ARS$)',
+        class: 'product-table__highlighted-text product-table__min-width'
+    },
+    {
+        key: 'shop',
+        label: 'Lugar/Negocio'
+    },
+    {
+        key: 'date',
+        label: 'Fecha'
+    },
+    {
+        key: 'usdPrice',
+        label: 'Precio antes (USD$)',
+        class: 'product-table__min-width'
+    },
+    {
+        key: 'arsPrice',
+        label: 'Precio antes (ARS$)',
+        class: 'product-table__min-width'
+    },
+]
+
+// Props
+const props = defineProps({
+    productList: {
+        type: Array,
+        required: true
+    },
+    loadingProducts: {
+        type: Boolean,
+        required: true
+    }
+})
+
+// Emits
+const emit = defineEmits(['deleteClick', 'addProductClick'])
+
+// Refs
+const ui = ref<{
+    productList: IProduct[],
+    loadingProducts: boolean,
+}>(
+    {
+        productList: [],
+        loadingProducts: true,
+    }
+);
+
+// Watchers
+watch(() => props.productList,
+    (productList) => {
+        ui.value.productList = productList as IProduct[];
+    }
+);
+watch(() => props.loadingProducts,
+    (loadingProducts) => {
+        ui.value.loadingProducts = loadingProducts;
+    }
+);
+
+// Methods
+
+function addProductClick() {
+    emit('addProductClick');
+}
+
+function deleteProductClick(row: IProduct) {
+    emit('deleteClick', { product: row });
+}
+
+</script>
