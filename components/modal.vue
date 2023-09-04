@@ -65,16 +65,16 @@ watch(() => props.product,
 // Methods
 function confirmDeleteClick() {
     ui.value.showingModal = false;
+    emit('confirmDelete', { product: ui.value.product })
     Utils.clearObject(ui.value.product, Utils.initialProduct);
 
-    emit('confirmDelete', { product: ui.value.product })
 }
 
 function cancelDeleteClick() {
     ui.value.showingModal = false;
+    emit('cancelDelete', { product: ui.value.product })
     Utils.clearObject(ui.value.product, Utils.initialProduct);
 
-    emit('cancelDelete', { product: ui.value.product })
 
 }
 </script>
