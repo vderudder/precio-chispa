@@ -1,58 +1,27 @@
 <template>
     <UContainer>
-        <Header :usd-price="ui.usdPrice" :loading-usd="ui.loadingUsd" @usd-price-change="usdPriceChanged"/>
+        <Header :usd-price="ui.usdPrice" :loading-usd="ui.loadingUsd" @usd-price-change="usdPriceChanged" />
 
-        <!-- Search and product form -->
-        <UForm ref="form" :validate="validate" :state="product" @submit.prevent="addProductClick" class="mt-8 m-auto">
-            <UFormGroup label="Producto" name="name" class="mb-3 justify-center"
-                :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                <div class="flex items-center gap-3 search-and-add">
-                    <UInput ref="searchInput" v-model="product.name" placeholder="Buscar | Agregar" 
-                        icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" trailing-icon="i-heroicons-exclamation-circle-20-solid"
-                        @focus="scrollAtFocus" />
-                    <UButton :disabled="!product.name"
-                        :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs"
-                        color="primary" square variant="solid" @click="showFormClick" />
-                </div>
-            </UFormGroup>
-            <div v-if="ui.showingForm">
-                <div class="grid grid-cols-2 gap-3">
-                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
-                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                        <UInput v-model="product.arsPrice" type="number"
-                            trailing-icon="i-heroicons-exclamation-circle-20-solid" />
-                    </UFormGroup>
-                    <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3"
-                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                        <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
-                    </UFormGroup>
-                </div>
+        <ProductForm :product="product" :usd-price="ui.usdPrice" :showing-form="ui.showingForm"
+            @add-product-click="addProductClick" @search-product="setSearchValue" />
 
-                <div class="text-center">
-                    <UButton type="submit" class="my-2" :disabled="ui.loadingUsd">
-                        Agregar
-                    </UButton>
-                </div>
+        <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick"
+            @delete-click="deleteProductClick" />
 
-            </div>
-        </UForm>
-
-        <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick" @delete-click="deleteProductClick"/>
-
-        <Modal :showing-modal="ui.showingModal" :product="ui.productToDelete" @cancel-delete="cancelDeleteClick" @confirm-delete="confirmDeleteClick"/>
+        <Modal :showing-modal="ui.showingModal" :product="ui.productToDelete" @cancel-delete="cancelDeleteClick"
+            @confirm-delete="confirmDeleteClick" />
 
     </UContainer>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import type { FormError } from '@nuxthq/ui/dist/runtime/types'
 import { IProduct } from '../typings/product.data'
-import { uuid } from 'vue-uuid';
 
 import Header from '../components/header.vue'
 import Modal from '../components/modal.vue'
 import ProductTable from '../components/productTable.vue'
+import ProductForm from '../components/productForm.vue'
 import { Utils } from '../utils/utils';
 
 defineShortcuts({
@@ -88,8 +57,6 @@ const ui = ref<{
         usdPrice: 0
     }
 );
-const form = ref()
-const searchInput = ref();
 
 //Computed
 const filteredRows = computed(() => {
@@ -105,53 +72,64 @@ const filteredRows = computed(() => {
 })
 
 // Methods
-async function addProductClick() {
-    if (!ui.value.showingForm) return;
-    if (await form.value!.validate()) {
-        // Calculating fields
-        product.id = uuid.v4();
-        product.date = new Date(Date.now()).toLocaleDateString('es-AR');
-        product.usdPrice = Utils.roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
-        product.estPrice = Utils.roundNumberTwoDecimals(product.usdPrice * ui.value.usdPrice);
-        // Adding product to list
-        ui.value.productList.push({ ...product });
-        // Saving to local storage
-        Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
 
-        // Clearing form
-        Utils.clearObject(product, Utils.initialProduct);
-        ui.value.showingForm = false;
-    }
+/**
+ * Updates product name to be correctly filtered
+ * @param event Emitted event from product form
+ */
+function setSearchValue(event: any) {
+    product.name = event.searchValue;
 }
 
 /**
- * Validates product form
- * @param product 
+ * Creates product
+ * @param event Emitted event from product form
  */
-function validate(product: IProduct): FormError[] {
-    const errors = []
-    if (!product.name) errors.push({ path: 'name', message: 'Por favor ingresa un nombre válido ' })
-    if (!product.arsPrice) errors.push({ path: 'arsPrice', message: 'Por favor ingresa un precio válido' })
-    if (!product.shop) errors.push({ path: 'shop', message: 'Por favor ingresa un nombre válido' })
-    return errors
+function addProductClick(event: any) {
+    // Adding product to list
+    ui.value.productList.push({ ...event.product });
+    // Saving to local storage
+    Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+
+    // Clearing form
+    Utils.clearObject(product, Utils.initialProduct);
+    ui.value.showingForm = false;
 }
 
+/**
+ * Updates estimated price for all products when usd price change
+ * @param event Emitted event from header
+ */
 function usdPriceChanged(event: any) {
     // Calculate estimated price
     ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(event.usdPrice * p.usdPrice) }));
 }
 
+/**
+ * Toggles the product form
+ */
 function showFormClick() {
     ui.value.showingForm = !ui.value.showingForm;
 }
 
+/**
+ * Shows modal and sets a temporal product to delete
+ * @param event Emitted event from product table
+ */
 function deleteProductClick(event: any) {
     ui.value.showingModal = true;
-    ui.value.productToDelete = {...event.product};
+    console.log(ui.value.productToDelete)
+    ui.value.productToDelete = { ...event.product };
+    console.log(ui.value.productToDelete)
+
 }
 
+/**
+ * Finally delete product from list, closes modal
+ */
 function confirmDeleteClick() {
     ui.value.showingModal = false;
+    console.log(ui.value.productToDelete)
 
     // Remove from ui list
     const index = ui.value.productList.findIndex(p => p.id === ui.value.productToDelete.id);
@@ -163,13 +141,12 @@ function confirmDeleteClick() {
 
 }
 
+/**
+ * Cancels deleting operation, closes modal
+ */
 function cancelDeleteClick() {
     ui.value.showingModal = false;
     Utils.clearObject(ui.value.productToDelete, Utils.initialProduct);
-}
-
-function scrollAtFocus() {
-    searchInput.value.input.scrollIntoView({ behavior: "smooth" });
 }
 
 onMounted(async () => {
