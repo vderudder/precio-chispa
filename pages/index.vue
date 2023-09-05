@@ -6,10 +6,7 @@
             @add-product-click="addProductClick" @search-product="setSearchValue" />
 
         <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick"
-            @delete-click="deleteProductClick" />
-
-        <Modal :showing-modal="ui.showingModal" :product="ui.productToDelete" @cancel-delete="cancelDeleteClick"
-            @confirm-delete="confirmDeleteClick" />
+            @product-edited="editProductClick" />
 
     </UContainer>
 </template>
@@ -19,17 +16,9 @@ import { reactive, ref } from 'vue'
 import { IProduct } from '../typings/product.data'
 
 import Header from '../components/header.vue'
-import Modal from '../components/modal.vue'
 import ProductTable from '../components/productTable.vue'
 import ProductForm from '../components/productForm.vue'
 import { Utils } from '../utils/utils';
-
-defineShortcuts({
-    escape: {
-        usingInput: true,
-        handler: () => { cancelDeleteClick(); }
-    }
-})
 
 // Key to set productList in localstorage
 const productListKey = 'product-list';
@@ -113,40 +102,22 @@ function showFormClick() {
 }
 
 /**
- * Shows modal and sets a temporal product to delete
+ * Replaces product with one edited in product list
  * @param event Emitted event from product table
  */
-function deleteProductClick(event: any) {
-    ui.value.showingModal = true;
-    console.log(ui.value.productToDelete)
-    ui.value.productToDelete = { ...event.product };
-    console.log(ui.value.productToDelete)
+function editProductClick(event: any) {
+    event.product.usdPrice = Utils.roundNumberTwoDecimals(event.product.arsPrice / ui.value.usdPrice);
+    event.product.estPrice = Utils.roundNumberTwoDecimals(event.product.usdPrice * ui.value.usdPrice);
 
-}
+    const index = ui.value.productList.findIndex(p => p.id == event.product.id)
+    ui.value.productList.splice(index, 1, event.product);
 
-/**
- * Finally delete product from list, closes modal
- */
-function confirmDeleteClick() {
+    // Saving to local storage
+    Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+
+    // Clearing form
+    Utils.clearObject(product, Utils.initialProduct);
     ui.value.showingModal = false;
-    console.log(ui.value.productToDelete)
-
-    // Remove from ui list
-    const index = ui.value.productList.findIndex(p => p.id === ui.value.productToDelete.id);
-    ui.value.productList.splice(index, 1);
-
-    // Replace local storage
-    const stringifiedList = JSON.stringify(ui.value.productList);
-    Utils.setItemToLocalStorage(productListKey, stringifiedList);
-
-}
-
-/**
- * Cancels deleting operation, closes modal
- */
-function cancelDeleteClick() {
-    ui.value.showingModal = false;
-    Utils.clearObject(ui.value.productToDelete, Utils.initialProduct);
 }
 
 onMounted(async () => {

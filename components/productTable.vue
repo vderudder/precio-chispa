@@ -1,6 +1,7 @@
 <template>
     <div>
         <UTable :rows="ui.productList" :columns="columns" :loading="ui.loadingProducts" :ui="{
+            tr: { active: 'hover:bg-green-50 dark:hover:bg-green-900/30 cursor-pointer' },
             th: { size: 'text-base' },
             td: { size: 'text-base' },
             loadingState: {
@@ -8,15 +9,9 @@
                 icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin'
             },
         }" class="overflow-auto table__height"
-            :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }">
-
+            :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }" @select="selectProductClick">
             <template #estPrice-data="{ row }">
                 <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
-            </template>
-
-            <!-- Delete button -->
-            <template #actions-data="{ row }">
-                <UButton color="gray" variant="ghost" icon="i-heroicons-trash" @click="deleteProductClick(row)" />
             </template>
 
             <!-- Empty state -->
@@ -29,18 +24,19 @@
                 </div>
             </template>
         </UTable>
+
+        <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @cancel-edit="cancelEditClick"
+            @confirm-edit="confirmEditClick" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { IProduct } from '../typings/product.data'
+import { Utils } from '../utils/utils';
 
 // Form columns config
 const columns = [
-    {
-        key: 'actions'
-    },
     {
         key: 'name',
         label: 'Producto'
@@ -83,16 +79,20 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['deleteClick', 'addProductClick'])
+const emit = defineEmits(['addProductClick', 'productEdited'])
 
 // Refs
 const ui = ref<{
     productList: IProduct[],
     loadingProducts: boolean,
+    showingModal: boolean,
+    currentProduct: IProduct
 }>(
     {
         productList: [],
         loadingProducts: true,
+        showingModal: false,
+        currentProduct: { ...Utils.initialProduct }
     }
 );
 
@@ -110,12 +110,29 @@ watch(() => props.loadingProducts,
 
 // Methods
 
+function selectProductClick(row: IProduct) {
+    ui.value.showingModal = true;
+    ui.value.currentProduct = { ...row };
+
+}
+
 function addProductClick() {
     emit('addProductClick');
 }
 
-function deleteProductClick(row: IProduct) {
-    emit('deleteClick', { product: row });
+function cancelEditClick() {
+    ui.value.showingModal = false;
+}
+
+function confirmEditClick(event: any) {
+    ui.value.showingModal = false;
+
+    emit('productEdited', { product: event.product })
+
+}
+
+function deleteClick() {
+
 }
 
 </script>

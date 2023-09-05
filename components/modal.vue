@@ -1,19 +1,37 @@
 <template>
     <div>
-        <UModal v-model="ui.showingModal" @focusout="cancelDeleteClick">
+        <UModal v-model="ui.showingModal">
             <UCard>
                 <template #header>
                     <div class="flex items-center gap-2">
-                        <UIcon name="i-heroicons-exclamation-circle-20-solid" class="me-1 text-red-400" />
-                        <strong>Eliminar producto</strong>
+                        <UIcon name="i-heroicons-pencil-square-20-solid" class="me-1 text-green-400" />
+                        <strong>Editar</strong>
                     </div>
                 </template>
-                ¿Estás seguro?
+                <UForm ref="form" :validate="validate" :state="ui.currentProduct" @submit.prevent="editProductClick"
+                    class="m-auto">
+                    <UFormGroup label="Producto" name="name" class="mb-3 justify-center"
+                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
+                        <UInput v-model="ui.currentProduct.name" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    </UFormGroup>
+                    <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
+                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
+                        <UInput v-model="ui.currentProduct.arsPrice" type="number"
+                            trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    </UFormGroup>
+                    <UFormGroup label="Lugar/Negocio" name="shop" class=""
+                        :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
+                        <UInput v-model="ui.currentProduct.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    </UFormGroup>
 
-                <template #footer>
-                    <UButton color="red" variant="solid" @click="confirmDeleteClick">Sí, eliminar</UButton>
-                    <UButton color="white" variant="ghost" class="mx-4" @click="cancelDeleteClick">Cancelar</UButton>
-                </template>
+                    <div class="border-t border-gray-800 mt-4 pt-4">
+                        <UButton type="submit" variant="solid">Aceptar</UButton>
+                        <UButton color="white" variant="ghost" class="mx-4" @click="cancelEditClick">Cancelar</UButton>
+                    </div>
+
+                </UForm>
+
+
             </UCard>
         </UModal>
     </div>
@@ -22,6 +40,14 @@
 <script setup lang="ts">
 import { Utils } from '../utils/utils';
 import { IProduct } from '../typings/product.data'
+import { FormError } from '@nuxthq/ui/dist/runtime/types/form';
+
+defineShortcuts({
+    escape: {
+        usingInput: true,
+        handler: () => { cancelEditClick(); }
+    }
+})
 
 // Props
 const props = defineProps({
@@ -36,16 +62,16 @@ const props = defineProps({
 })
 
 // // Emits
-const emit = defineEmits(['cancelDelete', 'confirmDelete'])
+const emit = defineEmits(['cancelEdit', 'confirmEdit'])
 
 // Refs
 const ui = ref<{
     showingModal: boolean,
-    product: IProduct
+    currentProduct: IProduct
 }>(
     {
         showingModal: false,
-        product: { ...Utils.initialProduct }
+        currentProduct: { ...Utils.initialProduct }
     }
 );
 
@@ -55,26 +81,33 @@ watch(() => props.showingModal,
         ui.value.showingModal = showingModal;
     }
 );
-watch(() => props.product,
+watch(() => props.product as IProduct,
     (product) => {
-        ui.value.product = product as IProduct;
+        ui.value.currentProduct = product;
     }
 );
 
-
 // Methods
-function confirmDeleteClick() {
-    ui.value.showingModal = false;
-    emit('confirmDelete', { product: ui.value.product })
-    Utils.clearObject(ui.value.product, Utils.initialProduct);
 
+/**
+ * Validates product form
+ * @param product 
+ */
+function validate(product: IProduct): FormError[] {
+    const errors = []
+    if (!product.name) errors.push({ path: 'name', message: 'Por favor ingresa un nombre válido ' })
+    if (!product.arsPrice) errors.push({ path: 'arsPrice', message: 'Por favor ingresa un precio válido' })
+    if (!product.shop) errors.push({ path: 'shop', message: 'Por favor ingresa un nombre válido' })
+    return errors
 }
 
-function cancelDeleteClick() {
+function editProductClick() {
     ui.value.showingModal = false;
-    emit('cancelDelete', { product: ui.value.product })
-    Utils.clearObject(ui.value.product, Utils.initialProduct);
+    emit('confirmEdit', { product: ui.value.currentProduct })
+}
 
-
+function cancelEditClick() {
+    ui.value.showingModal = false;
+    emit('cancelEdit')
 }
 </script>
