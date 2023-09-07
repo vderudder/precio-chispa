@@ -26,7 +26,7 @@
         </UTable>
 
         <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @cancel-edit="cancelEditClick"
-            @confirm-edit="confirmEditClick" />
+            @confirm-edit="confirmEditClick" @confirm-delete="deleteClick"/>
     </div>
 </template>
 
@@ -79,7 +79,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['addProductClick', 'productEdited'])
+const emit = defineEmits(['addProductClick', 'productEdited', 'productDeleted'])
 
 // Refs
 const ui = ref<{
@@ -131,8 +131,10 @@ function confirmEditClick(event: any) {
 
 }
 
-function deleteClick() {
+function deleteClick(event: any) {
+    ui.value.showingModal = false;
 
+    emit('productDeleted', { product: event.product })
 }
 
 </script>

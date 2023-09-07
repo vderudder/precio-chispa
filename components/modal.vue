@@ -1,11 +1,33 @@
 <template>
     <div>
-        <UModal v-model="ui.showingModal">
+        <UModal v-model="ui.showingModal" prevent-close>
             <UCard>
                 <template #header>
-                    <div class="flex items-center gap-2">
-                        <UIcon name="i-heroicons-pencil-square-20-solid" class="me-1 text-green-400" />
-                        <strong>Editar</strong>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <UIcon name="i-heroicons-pencil-square-20-solid" class="me-1 text-xl text-green-400" />
+                            <strong>Editar</strong>
+                        </div>
+                        <UPopover>
+                            <UButton color="gray" variant="ghost" icon="i-heroicons-trash"
+                                :ui="{ color: { gray: { ghost: 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800' } } }">
+                            </UButton>
+                            <template v-slot:panel="{ close }">
+                                <UCard>
+                                    <div class="flex items-center gap-2">
+                                        <UIcon name="i-heroicons-exclamation-circle-20-solid"
+                                            class="me-1 text-xl text-red-400" />
+                                        <strong>¿Estás seguro?</strong>
+                                    </div>
+                                    <template #footer>
+                                        <UButton color="red" variant="solid" size="xs" @click="confirmDeleteClick(close)">
+                                            Sí, eliminar</UButton>
+                                        <UButton color="white" variant="ghost" class="mx-4"
+                                            @click="cancelDeleteClick(close)">Cancelar</UButton>
+                                    </template>
+                                </UCard>
+                            </template>
+                        </UPopover>
                     </div>
                 </template>
                 <UForm ref="form" :validate="validate" :state="ui.currentProduct" @submit.prevent="editProductClick"
@@ -28,10 +50,7 @@
                         <UButton type="submit" variant="solid">Aceptar</UButton>
                         <UButton color="white" variant="ghost" class="mx-4" @click="cancelEditClick">Cancelar</UButton>
                     </div>
-
                 </UForm>
-
-
             </UCard>
         </UModal>
     </div>
@@ -62,7 +81,7 @@ const props = defineProps({
 })
 
 // // Emits
-const emit = defineEmits(['cancelEdit', 'confirmEdit'])
+const emit = defineEmits(['cancelEdit', 'confirmEdit', 'confirmDelete'])
 
 // Refs
 const ui = ref<{
@@ -109,5 +128,15 @@ function editProductClick() {
 function cancelEditClick() {
     ui.value.showingModal = false;
     emit('cancelEdit')
+}
+
+function confirmDeleteClick(close: () => any) {
+    ui.value.showingModal = false;
+    close();
+    emit('confirmDelete', { product: ui.value.currentProduct })
+}
+
+function cancelDeleteClick(close: () => any) {
+    close();
 }
 </script>

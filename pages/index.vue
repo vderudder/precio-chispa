@@ -6,7 +6,7 @@
             @add-product-click="addProductClick" @search-product="setSearchValue" />
 
         <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick"
-            @product-edited="editProductClick" />
+            @product-edited="editProductClick" @product-deleted="deleteProductClick"/>
 
     </UContainer>
 </template>
@@ -111,6 +111,18 @@ function editProductClick(event: any) {
 
     const index = ui.value.productList.findIndex(p => p.id == event.product.id)
     ui.value.productList.splice(index, 1, event.product);
+
+    // Saving to local storage
+    Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+
+    // Clearing form
+    Utils.clearObject(product, Utils.initialProduct);
+    ui.value.showingModal = false;
+}
+
+function deleteProductClick(event: any) {
+    const index = ui.value.productList.findIndex(p => p.id == event.product.id)
+    ui.value.productList.splice(index, 1);
 
     // Saving to local storage
     Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
