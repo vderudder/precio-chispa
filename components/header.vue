@@ -4,13 +4,17 @@
         <!-- USD Price -->
         <div class="mb-6">
             <!-- Badge and edit -->
-            <div v-if="!ui.editingUsdPrice">
-                <UBadge color="gray" size="md" variant="solid" class="me-2">
-                    <UIcon v-if="!props.loadingUsd" name="i-heroicons-currency-dollar-20-solid"
-                        class="me-1 text-primary-500" />
-                    <UIcon v-else name="i-heroicons-arrow-path-20-solid" class="me-1 animate-spin" />
-                    {{ ui.usdPrice == 0 ? '' : ui.usdPrice }}
-                </UBadge>
+            <div v-if="!ui.editingUsdPrice" class="flex flex-row items-center justify-center">
+                <UPopover mode="hover">
+                    <UBadge color="gray" size="md" variant="solid" class="me-2">
+                        <UIcon :name="props.loadingUsd ? 'i-heroicons-arrow-path-20-solid' : 'i-heroicons-currency-dollar-20-solid'"
+                            :class="props.loadingUsd ? 'me-1 animate-spin' : 'me-1 text-primary-500'" />
+                        {{ ui.usdPrice == 0 ? '' : ui.usdPrice }}
+                    </UBadge>
+                    <template #panel>
+                        <span class="text-xs m-2">Valor promedio en ARS del USD paralelo</span>
+                    </template>
+                </UPopover>
                 <UButton :disabled="props.loadingUsd" icon="i-heroicons-pencil" size="2xs" color="lime" square
                     variant="soft" @click="editUsdPriceClick" />
             </div>

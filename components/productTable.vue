@@ -10,8 +10,51 @@
             },
         }" class="overflow-auto table__height"
             :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }" @select="selectProductClick">
+
+            <!-- Estimated price column -->
             <template #estPrice-data="{ row }">
                 <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
+            </template>
+
+            <!-- Estimated price header -->
+            <template #estPrice-header="{ column }">
+                <div class="flex flex-row items-center">
+                    <span class="text-primary-500 dark:text-primary-400 min-w-fit">{{ column.label }}</span>
+                    <UPopover mode="hover" class="ps-1" :ui="{ wrapper: 'flex' }">
+                        <UIcon name="i-heroicons-information-circle-20-solid" />
+                        <template #panel>
+                            <p class="text-xs m-2 font-normal text-gray-300">Precio estimado según el valor
+                                promedio del USD hoy</p>
+                        </template>
+                    </UPopover>
+                </div>
+            </template>
+
+            <!-- Estimated price header -->
+            <template #usdPrice-header="{ column }">
+                <div class="flex flex-row items-center">
+                    <span class="min-w-fit">{{ column.label }}</span>
+                    <UPopover mode="hover" class="ps-1" :ui="{ wrapper: 'flex' }">
+                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400"/>
+                        <template #panel>
+                            <p class="text-xs m-2 font-normal text-gray-300">Precio en USD según el valor
+                                promedio del día ingresado</p>
+                        </template>
+                    </UPopover>
+                </div>
+            </template>
+
+            <!-- Estimated price header -->
+            <template #arsPrice-header="{ column }">
+                <div class="flex flex-row items-center">
+                    <span class="min-w-fit">{{ column.label }}</span>
+                    <UPopover mode="hover" class="ps-1" :ui="{ wrapper: 'flex' }">
+                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400"/>
+                        <template #panel>
+                            <p class="text-xs m-2 font-normal text-gray-300">Precio en ARS del día ingresado</p>
+                        </template>
+                    </UPopover>
+                </div>
             </template>
 
             <!-- Empty state -->
@@ -26,7 +69,7 @@
         </UTable>
 
         <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @cancel-edit="cancelEditClick"
-            @confirm-edit="confirmEditClick" @confirm-delete="deleteClick"/>
+            @confirm-edit="confirmEditClick" @confirm-delete="deleteClick" />
     </div>
 </template>
 
