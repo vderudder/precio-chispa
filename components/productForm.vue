@@ -4,8 +4,8 @@
             :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
             <div class="flex items-center gap-3 search-and-add">
                 <UInput ref="searchInput" v-model="product.name" placeholder="Buscar | Agregar"
-                    icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline"
-                    trailing-icon="i-heroicons-exclamation-circle-20-solid" @focus="scrollAtFocus" @keyup="searchProduct" />
+                    icon="i-heroicons-magnifying-glass-20-solid" color="gray" variant="outline" @focus="scrollAtFocus"
+                    @keyup="searchProduct" />
                 <UButton :disabled="!product.name"
                     :icon="!ui.showingForm ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-up'" size="xs"
                     color="primary" square variant="solid" @click="showFormClick" />
@@ -15,12 +15,11 @@
             <div class="grid grid-cols-2 gap-3">
                 <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                    <UInput v-model="product.arsPrice" type="number"
-                        trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    <UInput v-model="product.arsPrice" type="number" />
                 </UFormGroup>
                 <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                    <UInput v-model="product.shop" trailing-icon="i-heroicons-exclamation-circle-20-solid" />
+                    <UInput v-model="product.shop" />
                 </UFormGroup>
             </div>
 
@@ -100,7 +99,7 @@ function searchProduct() {
 /**
  * Toggles the product form
  */
- function showFormClick() {
+function showFormClick() {
     ui.value.showingForm = !ui.value.showingForm;
 }
 
