@@ -55,7 +55,7 @@ const filteredRows = computed(() => {
 
     return ui.value.productList.filter((p) => {
         return Object.values(p).some((value) => {
-            return String(value).toLowerCase().includes(product.name.toLowerCase())
+            return String(value).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(product.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
         })
     })
 })
