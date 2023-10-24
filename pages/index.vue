@@ -6,7 +6,7 @@
             @add-product-click="addProductClick" @search-product="setSearchValue" />
 
         <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick"
-            @product-edited="editProductClick" @product-deleted="deleteProductClick"/>
+            @product-edited="editProductClick" @product-deleted="deleteProductClick" />
 
     </UContainer>
 </template>
@@ -106,10 +106,14 @@ function showFormClick() {
  * @param event Emitted event from product table
  */
 function editProductClick(event: any) {
-    event.product.usdPrice = Utils.roundNumberTwoDecimals(event.product.arsPrice / ui.value.usdPrice);
-    event.product.estPrice = Utils.roundNumberTwoDecimals(event.product.usdPrice * ui.value.usdPrice);
-
     const index = ui.value.productList.findIndex(p => p.id == event.product.id)
+
+    // Re-evaluate price only when price field is edited
+    if (ui.value.productList[index].arsPrice != event.product.arsPrice) {
+        event.product.usdPrice = Utils.roundNumberTwoDecimals(event.product.arsPrice / ui.value.usdPrice);
+        event.product.estPrice = Utils.roundNumberTwoDecimals(event.product.usdPrice * ui.value.usdPrice);
+    }
+
     ui.value.productList.splice(index, 1, event.product);
 
     // Saving to local storage
