@@ -3,7 +3,7 @@
         <UTable :rows="ui.productList" :columns="columns" :loading="ui.loadingProducts" :ui="{
             tr: { active: 'hover:bg-green-50 dark:hover:bg-green-900/30 cursor-pointer' },
             th: { size: 'text-base' },
-            td: { size: 'text-base' },
+            td: { base: 'whitespace-normal', size: 'text-base' },
             loadingState: {
                 wrapper: 'flex flex-col items-start md:items-center justify-center px-6 py-14 sm:px-14',
                 icon: 'w-6 h-6 md:mx-auto text-gray-400 dark:text-gray-500 mb-4 animate-spin'
@@ -99,7 +99,7 @@ const columns = [
     },
     {
         key: 'usdPrice',
-        label: 'Precio antes (USD$)',
+        label: 'Precio (USD$)',
         class: 'product-table__min-width'
     },
     {
