@@ -15,7 +15,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                    <UInput v-model="product.arsPrice" type="number" />
+                    <UInput v-model="product.arsPrice" type="number" step="any" min="0"/>
                 </UFormGroup>
                 <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">

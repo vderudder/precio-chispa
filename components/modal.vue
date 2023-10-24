@@ -38,7 +38,7 @@
                     </UFormGroup>
                     <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
                         :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                        <UInput v-model="ui.currentProduct.arsPrice" type="number"
+                        <UInput v-model="ui.currentProduct.arsPrice" type="number" step="any" min="0"
                             trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                     </UFormGroup>
                     <UFormGroup label="Lugar/Negocio" name="shop" class=""
