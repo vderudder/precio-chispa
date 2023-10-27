@@ -68,7 +68,7 @@
             </template>
         </UTable>
 
-        <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @cancel-edit="cancelEditClick"
+        <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @close-modal="closeModal"
             @confirm-edit="confirmEditClick" @confirm-delete="deleteClick" />
     </div>
 </template>
@@ -163,13 +163,11 @@ function addProductClick() {
     emit('addProductClick');
 }
 
-function cancelEditClick() {
+function closeModal() {
     ui.value.showingModal = false;
 }
 
 function confirmEditClick(event: any) {
-    ui.value.showingModal = false;
-
     emit('productEdited', { product: event.product })
 
 }
