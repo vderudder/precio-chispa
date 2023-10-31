@@ -6,7 +6,7 @@
             @add-product-click="addProductClick" @search-product="setSearchValue" />
 
         <ProductTable :product-list="filteredRows" :loading-products="ui.loadingProducts" @add-product-click="showFormClick"
-            @product-edited="editProductClick" @product-deleted="deleteProductClick" />
+            @product-edited="editProductClick" @product-deleted="deleteProductClick" @history-edited="updateHistory" />
 
     </UContainer>
 </template>
@@ -19,6 +19,7 @@ import Header from '../components/header.vue'
 import ProductTable from '../components/productTable.vue'
 import ProductForm from '../components/productForm.vue'
 import { Utils } from '../utils/utils';
+import { IProductHistory } from 'typings/product-history.data'
 
 // Key to set productList in localstorage
 const productListKey = 'product-list';
@@ -76,7 +77,7 @@ function setSearchValue(event: any) {
  */
 function addProductClick(event: any) {
     // Adding product to list
-    ui.value.productList.push({ ...event.product });
+    ui.value.productList.unshift({ ...event.product });
     // Saving to local storage
     Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
 
@@ -91,7 +92,7 @@ function addProductClick(event: any) {
  */
 function usdPriceChanged(event: any) {
     // Calculate estimated price
-    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(event.usdPrice * p.usdPrice) }));
+    ui.value.productList = ui.value.productList.map((p) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(event.usdPrice * p.history[0].usdPrice) }));
 }
 
 /**
@@ -136,6 +137,30 @@ function deleteProductClick(event: any) {
     ui.value.showingModal = false;
 }
 
+function updateHistory(event: any) {
+    const editedHistory = event.history as IProductHistory;
+    const productIndex = ui.value.productList.findIndex(p => p.id == event.productId);
+
+    if (productIndex >= 0) {
+        const index = ui.value.productList[productIndex].history.findIndex(h => h.id == editedHistory.id);
+        // Edit history, replace it
+        if (index >= 0) {
+            ui.value.productList[productIndex].history.splice(index, 1, editedHistory);
+        }
+        // New history, add it
+        else {
+            ui.value.productList[productIndex].history.unshift(editedHistory);
+        }
+
+        // Update estimated price
+        ui.value.productList[productIndex].estPrice = Utils.roundNumberTwoDecimals(ui.value.productList[productIndex].history[0].usdPrice * ui.value.usdPrice);
+
+        // Saving to local storage
+        Utils.setItemToLocalStorage(productListKey, JSON.stringify(ui.value.productList));
+    }
+
+}
+
 onMounted(async () => {
     ui.value.loadingUsd = true;
     ui.value.loadingProducts = true;
@@ -152,7 +177,7 @@ onMounted(async () => {
     //  Calculating estimated price when page mounts
     const productList = Utils.getItemFromLocalStorage(productListKey)
     if (productList) {
-        ui.value.productList = productList.map((p: IProduct) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(ui.value.usdPrice * p.usdPrice) }));
+        ui.value.productList = productList.map((p: IProduct) => ({ ...p, estPrice: Utils.roundNumberTwoDecimals(ui.value.usdPrice * p.history[0].usdPrice) }));
     }
     ui.value.loadingProducts = false;
 })

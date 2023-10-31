@@ -11,11 +11,6 @@
         }" class="overflow-auto table__height"
             :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Cargando...' }" @select="selectProductClick">
 
-            <!-- Estimated price column -->
-            <template #estPrice-data="{ row }">
-                <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
-            </template>
-
             <!-- Estimated price header -->
             <template #estPrice-header="{ column }">
                 <div class="flex flex-row items-center">
@@ -30,12 +25,17 @@
                 </div>
             </template>
 
-            <!-- Estimated price header -->
+            <!-- Estimated price column -->
+            <template #estPrice-data="{ row }">
+                <span class="text-primary-500 dark:text-primary-400">{{ row.estPrice }}</span>
+            </template>
+
+            <!-- Usd price header -->
             <template #usdPrice-header="{ column }">
                 <div class="flex flex-row items-center">
                     <span class="min-w-fit">{{ column.label }}</span>
                     <UPopover mode="hover" class="ps-1" :ui="{ wrapper: 'flex' }">
-                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400"/>
+                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400" />
                         <template #panel>
                             <p class="text-xs m-2 font-normal text-gray-300">Precio en USD según el valor
                                 promedio del día ingresado</p>
@@ -44,17 +44,32 @@
                 </div>
             </template>
 
-            <!-- Estimated price header -->
+            <!-- Usd price column -->
+            <template #usdPrice-data="{ row }">
+                <span>{{ row.history[0].usdPrice }}</span>
+            </template>
+
+            <!-- Ars price header -->
             <template #arsPrice-header="{ column }">
                 <div class="flex flex-row items-center">
                     <span class="min-w-fit">{{ column.label }}</span>
                     <UPopover mode="hover" class="ps-1" :ui="{ wrapper: 'flex' }">
-                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400"/>
+                        <UIcon name="i-heroicons-information-circle-20-solid" class="text-gray-400" />
                         <template #panel>
                             <p class="text-xs m-2 font-normal text-gray-300">Precio en ARS del día ingresado</p>
                         </template>
                     </UPopover>
                 </div>
+            </template>
+
+            <!-- Ars price column -->
+            <template #arsPrice-data="{ row }">
+                <span>{{ row.history[0].arsPrice }}</span>
+            </template>
+
+            <!-- Date column -->
+            <template #date-data="{ row }">
+                <span>{{ row.history[0].date }}</span>
             </template>
 
             <!-- Empty state -->
@@ -69,7 +84,7 @@
         </UTable>
 
         <Modal :showing-modal="ui.showingModal" :product="ui.currentProduct" @close-modal="closeModal"
-            @confirm-edit="confirmEditClick" @confirm-delete="deleteClick" />
+            @confirm-edit="confirmEditClick" @confirm-delete="deleteClick" @edited-history="editedHistory" />
     </div>
 </template>
 
@@ -122,7 +137,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['addProductClick', 'productEdited', 'productDeleted'])
+const emit = defineEmits(['addProductClick', 'productEdited', 'productDeleted', 'historyEdited'])
 
 // Refs
 const ui = ref<{
@@ -176,6 +191,10 @@ function deleteClick(event: any) {
     ui.value.showingModal = false;
 
     emit('productDeleted', { product: event.product })
+}
+
+function editedHistory(event: any) {
+    emit('historyEdited', { history: event.history, productId: event.productId })
 }
 
 </script>

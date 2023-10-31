@@ -1,3 +1,4 @@
+import { IProductHistory } from "typings/product-history.data";
 import { IProduct } from "typings/product.data";
 
 export namespace Utils {
@@ -6,12 +7,19 @@ export namespace Utils {
     export const initialProduct: IProduct = {
         id: '',
         name: '',
+        arsPrice: 0,
         estPrice: 0,
         shop: '',
-        date: '',
-        usdPrice: 0,
-        arsPrice: 0,
+        history: []
     };
+
+    // Initial history with cleared values
+    export const initialHistory: IProductHistory = {
+        id: '',
+        date: '',
+        arsPrice: 0,
+        usdPrice: 0,
+    }
 
     /**
      * Clears object

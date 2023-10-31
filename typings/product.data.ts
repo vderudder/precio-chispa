@@ -1,9 +1,10 @@
+import { IProductHistory } from "./product-history.data";
+
 export interface IProduct {
     id: string;
     name: string,
     estPrice: number,
-    shop: string,
-    date: string,
-    usdPrice: number,
     arsPrice: number,
+    shop: string,
+    history: IProductHistory[]
 }

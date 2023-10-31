@@ -15,7 +15,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <UFormGroup label="Precio en pesos" name="arsPrice" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
-                    <UInput v-model="product.arsPrice" type="number" step="any" min="0"/>
+                    <UInput v-model="product.arsPrice" type="number" step="any" min="0" />
                 </UFormGroup>
                 <UFormGroup label="Lugar/Negocio" name="shop" class="mb-3"
                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
@@ -109,11 +109,14 @@ function showFormClick() {
 async function addProductClick() {
     if (!ui.value.showingForm) return;
     if (await form.value!.validate()) {
+        const date = new Date(Date.now()).toLocaleDateString('es-AR');
+        const arsPrice = product.arsPrice;
+        const usdPrice = Utils.roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
+        
         // Calculating fields
         product.id = uuid.v4();
-        product.date = new Date(Date.now()).toLocaleDateString('es-AR');
-        product.usdPrice = Utils.roundNumberTwoDecimals(product.arsPrice / ui.value.usdPrice);
-        product.estPrice = Utils.roundNumberTwoDecimals(product.usdPrice * ui.value.usdPrice);
+        product.history = [{ id: uuid.v4(), date, arsPrice, usdPrice }]
+        product.estPrice = Utils.roundNumberTwoDecimals(usdPrice * ui.value.usdPrice);
 
         ui.value.showingForm = false;
 
