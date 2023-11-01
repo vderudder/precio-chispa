@@ -125,6 +125,10 @@ function editProductClick(event: any) {
     ui.value.showingModal = false;
 }
 
+/**
+  * Remove product from list
+  * @param event Emitted event from modal in product table
+  */
 function deleteProductClick(event: any) {
     const index = ui.value.productList.findIndex(p => p.id == event.product.id)
     ui.value.productList.splice(index, 1);
@@ -137,20 +141,25 @@ function deleteProductClick(event: any) {
     ui.value.showingModal = false;
 }
 
+ 
+ /**
+  * Updates history list for a product, whether it's a new one, edited or removed
+  * @param event Emitted event from modal in product table
+  */
 function updateHistory(event: any) {
-    const editedHistory = event.history as IProductHistory;
+    const currentHistory = event.history as IProductHistory;
     const productIndex = ui.value.productList.findIndex(p => p.id == event.productId);
+    const isRemoving = event.isRemoving
 
     if (productIndex >= 0) {
-        const index = ui.value.productList[productIndex].history.findIndex(h => h.id == editedHistory.id);
+        const historyIndex = ui.value.productList[productIndex].history.findIndex(h => h.id == currentHistory.id);
+
+        // Remove history
+        if (historyIndex >= 0 && isRemoving == true) ui.value.productList[productIndex].history.splice(historyIndex, 1);
         // Edit history, replace it
-        if (index >= 0) {
-            ui.value.productList[productIndex].history.splice(index, 1, editedHistory);
-        }
+        else if (historyIndex >= 0 && isRemoving == false) ui.value.productList[productIndex].history.splice(historyIndex, 1, currentHistory);
         // New history, add it
-        else {
-            ui.value.productList[productIndex].history.unshift(editedHistory);
-        }
+        else if (historyIndex < 0) ui.value.productList[productIndex].history.unshift(currentHistory);
 
         // Update estimated price
         ui.value.productList[productIndex].estPrice = Utils.roundNumberTwoDecimals(ui.value.productList[productIndex].history[0].usdPrice * ui.value.usdPrice);

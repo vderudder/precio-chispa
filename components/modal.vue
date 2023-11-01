@@ -73,27 +73,56 @@
                                 <!-- History list -->
                                 <UTable :columns="columns" :rows="ui.currentProduct.history"
                                     :ui="{ tbody: 'divide-y divide-gray-200 dark:divide-gray-800 block max-h-96 overflow-auto', tr: { base: 'table table-fixed w-full' } }"
-                                    :sort="{ column: 'date', direction: 'desc' }" @select="selectHistoryClick" />
+                                    @select="selectHistoryClick" />
                                 <!-- Footer -->
                                 <div class="border-t border-gray-800 mt-4 pt-4 flex">
-                                    <UButton class="me-4" variant="solid" @click="addPriceClick">Agregar precio</UButton>
+                                    <UButton class="me-4" variant="solid" icon="i-heroicons-plus" square
+                                        @click="addPriceClick"></UButton>
                                 </div>
                             </div>
 
                             <!-- New/edit price form -->
                             <UForm ref="form" v-if="ui.addingPrice || ui.editingPrice" :validate="validatePriceForm"
                                 :state="ui.currentHistory" @submit.prevent="submitHistoryForm" class="m-auto">
+                                <h3 class="text-primary-500 font-bold text-lg flex justify-center items-center gap-1">
+                                    <UIcon :name="ui.addingPrice ? 'i-heroicons-plus' : 'i-heroicons-pencil-square'" />
+                                    {{ ui.addingPrice ? 'Nuevo' : 'Editar' }}
+                                </h3>
                                 <UFormGroup label="Precio (ARS$)" name="arsPrice" class="mb-3 justify-center"
                                     :ui="{ error: 'mt-1 text-red-500 dark:text-red-400 text-xs' }">
                                     <UInput v-model="ui.currentHistory.arsPrice"
                                         trailing-icon="i-heroicons-exclamation-circle-20-solid" />
                                 </UFormGroup>
                                 <!-- Form footer -->
-                                <div class="border-t border-gray-800 mt-4 pt-4">
-                                    <UButton type="submit" variant="solid">Aceptar</UButton>
-                                    <UButton color="white" variant="ghost" class="mx-4" @click="cancelPriceForm">
-                                        Cancelar
-                                    </UButton>
+                                <div class="flex justify-between border-t border-gray-800 mt-4 pt-4">
+                                    <div>
+                                        <UButton type="submit" variant="solid">Aceptar</UButton>
+                                        <UButton color="white" variant="ghost" class="mx-4" @click="cancelPriceForm">
+                                            Cancelar
+                                        </UButton>
+                                    </div>
+
+                                    <UPopover v-if="showPopover">
+                                        <UButton color="gray" variant="ghost" icon="i-heroicons-trash"
+                                            :ui="{ color: { gray: { ghost: 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800' } } }">
+                                        </UButton>
+                                        <template v-slot:panel="{ close }">
+                                            <UCard>
+                                                <div class="flex items-center gap-2">
+                                                    <UIcon name="i-heroicons-exclamation-circle-20-solid"
+                                                        class="me-1 text-xl text-red-400" />
+                                                    <strong>¿Estás seguro?</strong>
+                                                </div>
+                                                <template #footer>
+                                                    <UButton color="red" variant="solid" size="xs"
+                                                        @click="confirmDeleteHistoryClick">
+                                                        Sí, eliminar</UButton>
+                                                    <UButton color="white" variant="ghost" class="mx-4"
+                                                        @click="cancelDeleteClick(close)">Cancelar</UButton>
+                                                </template>
+                                            </UCard>
+                                        </template>
+                                    </UPopover>
                                 </div>
                             </UForm>
 
@@ -188,6 +217,22 @@ const ui = ref<{
     }
 );
 
+// Computed
+
+// Show popover based on edit/new mode and history list length
+const showPopover = computed(() => {
+    // It's adding a new price, dont show
+    if (ui.value.addingPrice == true) return false;
+
+    // It's editing a price
+    else if (ui.value.editingPrice == true) {
+        // Dont show if there's only one history item
+        if (ui.value.currentProduct.history.length == 1 && ui.value.currentProduct.history[0].id == ui.value.currentHistory.id) return false;
+        // Show if it has more
+        else if (ui.value.currentProduct.history.length > 1) return true;
+    }
+})
+
 // Watchers
 watch(() => props.showingModal,
     (showingModal) => {
@@ -196,7 +241,7 @@ watch(() => props.showingModal,
 );
 watch(() => props.product as IProduct,
     (product) => {
-        ui.value.currentProduct = product;
+        ui.value.currentProduct = { ...product, history: [...product.history] };
     }
 );
 
@@ -305,7 +350,9 @@ async function submitHistoryForm() {
         ui.value.currentHistory.date = new Date(Date.now()).toLocaleDateString('es-AR');
         ui.value.currentHistory.usdPrice = Utils.roundNumberTwoDecimals(ui.value.currentHistory.arsPrice / usdPriceNow);
 
-        emit('editedHistory', { history: ui.value.currentHistory, productId: ui.value.currentProduct.id })
+        ui.value.currentProduct.history.unshift(ui.value.currentHistory)
+
+        emit('editedHistory', { history: ui.value.currentHistory, productId: ui.value.currentProduct.id, isRemoving: false })
 
         Utils.clearObject(ui.value.currentHistory, Utils.initialHistory);
 
@@ -332,9 +379,19 @@ async function submitHistoryForm() {
         const index = ui.value.currentProduct.history.findIndex(h => h.id == ui.value.currentHistory.id)
         ui.value.currentProduct.history[index] = ui.value.currentHistory;
 
-        emit('editedHistory', { history: ui.value.currentHistory, productId: ui.value.currentProduct.id })
+        emit('editedHistory', { history: ui.value.currentHistory, productId: ui.value.currentProduct.id, isRemoving: false })
 
     }
 }
+
+// Confirm delete for a history item
+function confirmDeleteHistoryClick() {
+    ui.value.editingPrice = false;
+    const index = ui.value.currentProduct.history.findIndex(h => h.id == ui.value.currentHistory.id)
+    ui.value.currentProduct.history.splice(index, 1);
+
+    emit('editedHistory', { history: ui.value.currentHistory, productId: ui.value.currentProduct.id, isRemoving: true })
+}
+
 // ------- END HISTORY TAB METHODS
 </script>

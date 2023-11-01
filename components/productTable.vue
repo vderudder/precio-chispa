@@ -194,7 +194,7 @@ function deleteClick(event: any) {
 }
 
 function editedHistory(event: any) {
-    emit('historyEdited', { history: event.history, productId: event.productId })
+    emit('historyEdited', { history: event.history, productId: event.productId, isRemoving: event.isRemoving })
 }
 
 </script>
